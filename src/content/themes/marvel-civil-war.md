@@ -184,26 +184,3 @@ planechase:
     flavor: "Sob sirenes e holofotes, cada investida moldava o rumo da guerra."
     image: "/images/planechase/marvel-civil-war/005-new-york-streets.png"
 ---
-
-## Sobre a mesa
-
-Mesa temática **fechada** com **4 decks prontos**, todos calibrados para ficarem próximos em **power level 7**, **Bracket 3**. A partida evoca o clima da **Guerra Civil** Marvel: heróis divididos, imprensa, pressão pública e batalhas em locais icônicos.
-
-## Regra temática principal
-
-> **Toda criatura do deck precisa ser um herói do universo Marvel.**
-
-Cartas que não representem heróis Marvel (criaturas genéricas, tokens que não sejam heróis, etc.) não podem estar no deck. As regras oficiais do Magic continuam valendo acima desta restrição temática.
-
-## Como jogar
-
-Escolha um dos quatro comandantes do Realm, copie o deck correspondente e sorteie o local da guerra antes da partida; depois jogue normalmente seguindo as regras de Commander, mantendo a regra central Pressão Pública ativa durante toda a partida.
-
-## Os quatro lados da guerra
-
-| Deck | Comandante | Moxfield |
-|------|------------|----------|
-| Secret Avengers | Captain America, Team Leader | [Abrir deck](https://www.moxfield.com/decks/f22bVROmQUCdXQP2_aeIiQ) |
-| Wakanda Neutrality | T'Challa, the Black Panther | [Abrir deck](https://www.moxfield.com/decks/tSVbdtdCBUah6rDouotw7A) |
-| Registration Act | Iron Man, Titan of Innovation | [Abrir deck](https://www.moxfield.com/decks/1i8_kMxPWUSMq1wQGB95mg) |
-| Mutant Resistance | Storm, Force of Nature | [Abrir deck](https://www.moxfield.com/decks/2eyCZJ1JyEu08_aW2DrPEg) |
