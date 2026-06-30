@@ -1,0 +1,143 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { scryfallLargeImage, type DeckDisplayData } from '../lib/scryfall';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+  deckDisplay: DeckDisplayData[];
+}
+
+const { theme, deckDisplay } = Astro.props;
+const { decks, decksTitle } = theme.data;
+const heading = decksTitle ?? 'Decks da mesa';
+
+---
+
+{decks.length > 0 && (
+  <section class="realm-decks" aria-labelledby="realm-decks-heading">
+    <header class="realm-decks__header">
+      <h2 id="realm-decks-heading" class="realm-decks__heading">{heading}</h2>
+      <div class="realm-decks__heading-rule" aria-hidden="true">
+        <span class="realm-decks__heading-line"></span>
+        <span class="realm-decks__heading-star">✦</span>
+        <span class="realm-decks__heading-line"></span>
+      </div>
+    </header>
+
+    <ul class="realm-decks__grid" role="list">
+      {
+        deckDisplay.map((deck) => (
+          <li class="realm-deck">
+            <div class="realm-deck__row">
+              <div class="realm-deck__commander">
+                {deck.commanderImage ? (
+                  <div
+                    class="realm-deck__card-frame realm-deck__card-frame--commander"
+                    tabindex="0"
+                    role="group"
+                    aria-label={`Ampliar ${deck.commander}`}
+                  >
+                    <img
+                      src={deck.commanderImage}
+                      alt={deck.commander}
+                      class="realm-deck__commander-art"
+                      width="220"
+                      height="308"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div class="realm-deck__zoom" aria-hidden="true">
+                      <img
+                        src={scryfallLargeImage(deck.commanderImage)}
+                        alt=""
+                        class="realm-deck__zoom-image"
+                        width="672"
+                        height="936"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div class="realm-deck__commander-fallback" aria-hidden="true">
+                    <span>{deck.commander.slice(0, 1)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div class="realm-deck__body">
+                <h3 class="realm-deck__title">
+                  <a
+                    href={deck.moxfieldUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="realm-deck__link"
+                  >
+                    <span class="realm-deck__link-text">{deck.name}</span>
+                    <span class="realm-deck__link-icon" aria-hidden="true">↗</span>
+                  </a>
+                </h3>
+
+                {deck.creatures.length > 0 && (
+                  <ul
+                    class="realm-deck__creatures"
+                    role="list"
+                    aria-label={`Criaturas em destaque — ${deck.name}`}
+                  >
+                    {deck.creatures.map((creature) => (
+                      <li class="realm-deck__creature">
+                        {creature.image ? (
+                          <div
+                            class="realm-deck__card-frame realm-deck__card-frame--creature"
+                            tabindex="0"
+                            role="group"
+                            aria-label={`Ampliar ${creature.name}`}
+                          >
+                            <img
+                              src={creature.image}
+                              alt={creature.name}
+                              class="realm-deck__creature-art"
+                              width="104"
+                              height="146"
+                              loading="lazy"
+                              decoding="async"
+                              title={creature.name}
+                            />
+                            <div class="realm-deck__zoom realm-deck__zoom--creature" aria-hidden="true">
+                              <img
+                                src={scryfallLargeImage(creature.image)}
+                                alt=""
+                                class="realm-deck__zoom-image"
+                                width="672"
+                                height="936"
+                                decoding="async"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div class="realm-deck__creature-fallback" title={creature.name}>
+                            <span>{creature.name}</span>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="realm-decks__credit">
+      Imagens das cartas via{' '}
+      <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">
+        Scryfall
+      </a>
+      {' '}· listas completas no{' '}
+      <a href="https://www.moxfield.com" target="_blank" rel="noopener noreferrer">
+        Moxfield
+      </a>
+    </p>
+  </section>
+)}

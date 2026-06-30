@@ -1,0 +1,146 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { scryfallLargeImage, type DeckDisplayData } from '../lib/scryfall';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+  deckDisplay?: DeckDisplayData[];
+}
+
+const { theme, deckDisplay = [] } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const { scenario, scenarioTitle, howToPlay, howToPlayTitle, commandersImage } = theme.data;
+
+const introTitle = scenarioTitle ?? 'Sobre a mesa';
+const playTitle = howToPlayTitle ?? 'Como jogar';
+
+const paragraphs =
+  scenario
+    ?.split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean) ?? [];
+
+const howToPlayParagraphs =
+  howToPlay
+    ?.split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean) ?? [];
+
+const commandersImageSrc = commandersImage
+  ? `${base}${commandersImage.replace(/^\//, '')}`
+  : null;
+
+const commanderArts = commandersImageSrc
+  ? []
+  : deckDisplay.map((deck) => ({
+      commander: deck.commander,
+      deckName: deck.name,
+      image: deck.commanderImage,
+    }));
+
+---
+
+{(paragraphs.length > 0 || howToPlayParagraphs.length > 0) && (
+  <section class="realm-intro" aria-labelledby="realm-intro-heading">
+    <article class="realm-intro__card">
+      <div class="realm-intro__text">
+        <header class="realm-intro__header">
+          <h2 id="realm-intro-heading" class="realm-intro__heading">{introTitle}</h2>
+          <div class="realm-intro__heading-rule" aria-hidden="true">
+            <span class="realm-intro__heading-line"></span>
+            <span class="realm-intro__heading-star">✦</span>
+            <span class="realm-intro__heading-line"></span>
+          </div>
+        </header>
+
+        <div class="realm-intro__body">
+          {paragraphs.map((paragraph, index) => (
+            <p
+              class:list={{
+                'realm-intro__lead': index === 0,
+                'realm-intro__closing':
+                  index === paragraphs.length - 1 &&
+                  paragraphs.length > 1 &&
+                  howToPlayParagraphs.length === 0,
+              }}
+            >
+              {paragraph}
+            </p>
+          ))}
+
+          {howToPlayParagraphs.length > 0 && (
+            <div class="realm-intro__howto">
+              <h3 class="realm-intro__howto-heading">{playTitle}</h3>
+              {howToPlayParagraphs.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {(commandersImageSrc || commanderArts.length > 0) && (
+        <div class="realm-intro__visual">
+          {commandersImageSrc ? (
+            <img
+              src={commandersImageSrc}
+              alt="Comandantes do Realm"
+              class="realm-intro__commanders-image"
+              width="480"
+              height="360"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <>
+              <ul class="realm-intro__commanders">
+                {commanderArts.map((entry) => (
+                  <li class="realm-intro__commander">
+                    {entry.image ? (
+                      <div
+                        class="realm-intro__commander-frame"
+                        tabindex="0"
+                        role="group"
+                        aria-label={`Ampliar ${entry.commander}`}
+                      >
+                        <img
+                          src={entry.image}
+                          alt={entry.commander}
+                          class="realm-intro__commander-art"
+                          width="220"
+                          height="306"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div class="realm-intro__commander-zoom" aria-hidden="true">
+                          <img
+                            src={scryfallLargeImage(entry.image)}
+                            alt=""
+                            width="672"
+                            height="936"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div class="realm-intro__commander-fallback" aria-label={entry.commander}>
+                        <span>{entry.commander}</span>
+                      </div>
+                    )}
+                    <p class="realm-intro__commander-name">{entry.commander}</p>
+                  </li>
+                ))}
+              </ul>
+              <p class="realm-intro__credit">
+                Imagens das cartas via{' '}
+                <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">
+                  Scryfall
+                </a>
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </article>
+  </section>
+)}

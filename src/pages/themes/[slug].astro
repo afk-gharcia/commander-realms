@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import RealmBanner from '../../components/RealmBanner.astro';
+import RealmIntro from '../../components/RealmIntro.astro';
+import RealmPlaySection from '../../components/RealmPlaySection.astro';
+import RealmDecksSection from '../../components/RealmDecksSection.astro';
+import { fetchDeckDisplayData } from '../../lib/scryfall';
+import { themeSlug } from '../../lib/themes';
+
+export async function getStaticPaths() {
+  const themes = await getCollection('themes');
+  return themes.map((theme) => ({
+    params: { slug: themeSlug(theme.id) },
+    props: { theme },
+  }));
+}
+
+const { theme } = Astro.props;
+const deckDisplay = theme.data.commandersImage ? [] : await fetchDeckDisplayData(theme.data.decks);
+---
+
+<BaseLayout title={theme.data.name} description={theme.data.summary} mainClass="site-main--realm">
+  <Header slot="header" />
+
+  <div class="content-container realm-page">
+    <RealmBanner theme={theme} />
+    <RealmIntro theme={theme} deckDisplay={deckDisplay} />
+    <RealmPlaySection theme={theme} />
+    <RealmDecksSection theme={theme} deckDisplay={deckDisplay} />
+  </div>
+</BaseLayout>

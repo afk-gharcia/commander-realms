@@ -1,0 +1,222 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+}
+
+const { theme } = Astro.props;
+const { planechase, planechaseTitle } = theme.data;
+const base = import.meta.env.BASE_URL;
+const heading = planechaseTitle ?? 'Locais temáticos';
+
+function shortLocationName(name: string): string {
+  const comma = name.indexOf(',');
+  return comma > 0 ? name.slice(0, comma).trim() : name;
+}
+
+const planes = planechase.map((plane) => ({
+  name: plane.name,
+  shortName: shortLocationName(plane.name),
+  subtitle: plane.subtitle ?? '',
+  flavor: plane.flavor ?? '',
+  effect: plane.effect,
+  image: `${base}${plane.image.replace(/^\//, '')}`,
+}));
+---
+
+<section class="planechase-panel" id="planechase-picker" aria-label="Sorteador de locais temáticos">
+  <header class="planechase-panel__header">
+    <h2 class="planechase-panel__heading">{heading}</h2>
+    <div class="planechase-panel__heading-rule" aria-hidden="true">
+      <span class="planechase-panel__heading-line"></span>
+      <span class="planechase-panel__heading-star">✦</span>
+      <span class="planechase-panel__heading-line"></span>
+    </div>
+  </header>
+
+  <ul class="planechase-picker__grid" role="list">
+    {
+      planes.map((plane, index) => (
+        <li class="planechase-picker__item" data-plane-index={index}>
+          <button
+            type="button"
+            class="planechase-picker__pool"
+            data-plane-pool={index}
+            aria-pressed="true"
+            aria-label={`Incluir ${plane.name} no sorteio`}
+          >
+            <span class="planechase-picker__pool-box" aria-hidden="true"></span>
+          </button>
+          <div class="planechase-picker__card" aria-label={`${plane.name}. Passe o mouse para ampliar a carta.`}>
+            <div class="planechase-picker__art">
+              <img
+                src={plane.image}
+                alt=""
+                class="planechase-picker__image"
+                width="320"
+                height="180"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="planechase-picker__info">
+              <h3 class="planechase-picker__name">{plane.shortName}</h3>
+              {plane.subtitle && <p class="planechase-picker__subtitle">{plane.subtitle}</p>}
+              {plane.flavor && <p class="planechase-picker__flavor">{plane.flavor}</p>}
+            </div>
+          </div>
+          <div class="planechase-picker__zoom" aria-hidden="true">
+            <img
+              src={plane.image}
+              alt=""
+              class="planechase-picker__zoom-image"
+              width="731"
+              height="1024"
+              decoding="async"
+            />
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+
+  <footer class="planechase-picker__bar">
+    <div class="planechase-picker__current">
+      <span class="planechase-picker__pin" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
+          ></path>
+        </svg>
+      </span>
+      <div class="planechase-picker__current-text">
+        <span class="planechase-picker__current-label">Local atual</span>
+        <strong class="planechase-picker__current-name" id="planechase-current-name">—</strong>
+      </div>
+    </div>
+
+    <p class="planechase-picker__effect" id="planechase-current-effect">
+      Sorteie um local para ver a regra ativa.
+    </p>
+
+    <button type="button" class="planechase-picker__roll btn--random" id="btn-random-plane">
+      <span class="planechase-picker__roll-label">Sortear local</span>
+      <span class="planechase-picker__dice" aria-hidden="true">⚀</span>
+    </button>
+  </footer>
+</section>
+
+<script define:vars={{ planes }}>
+  const root = document.getElementById('planechase-picker');
+  if (root && planes.length > 0) {
+    const pool = new Set(planes.map((_, index) => index));
+    let activeIndex = null;
+    let isRolling = false;
+    let rollTimer = null;
+
+    const ROLL_DURATION_MS = 2400;
+    const ROLL_TICK_MS = 140;
+
+    const nameEl = document.getElementById('planechase-current-name');
+    const effectEl = document.getElementById('planechase-current-effect');
+    const rollBtn = document.getElementById('btn-random-plane');
+    const rollLabel = rollBtn?.querySelector('.planechase-picker__roll-label');
+
+    function formatEffect(text) {
+      return text.replace(/\{(\d+)\}/g, '{$1}');
+    }
+
+    function render() {
+      root.querySelectorAll('[data-plane-index]').forEach((item) => {
+        const index = Number(item.getAttribute('data-plane-index'));
+        const inPool = pool.has(index);
+        const isActive = activeIndex === index;
+
+        item.classList.toggle('is-active', isActive);
+        item.classList.toggle('is-excluded', !inPool);
+
+        const poolBtn = item.querySelector('[data-plane-pool]');
+        if (poolBtn) {
+          poolBtn.setAttribute('aria-pressed', String(inPool));
+          poolBtn.classList.toggle('is-checked', inPool);
+          poolBtn.disabled = isRolling;
+        }
+      });
+
+      if (!isRolling) {
+        if (activeIndex !== null && planes[activeIndex]) {
+          const plane = planes[activeIndex];
+          if (nameEl) nameEl.textContent = plane.shortName || plane.name;
+          if (effectEl) effectEl.textContent = formatEffect(plane.effect);
+        } else {
+          if (nameEl) nameEl.textContent = '—';
+          if (effectEl) {
+            effectEl.textContent = 'Sorteie um local para ver a regra ativa.';
+          }
+        }
+      }
+
+      if (rollBtn) {
+        rollBtn.disabled = pool.size === 0 || isRolling;
+      }
+    }
+
+    function setRollingState(rolling) {
+      isRolling = rolling;
+      root.classList.toggle('is-sorteando', rolling);
+      nameEl?.classList.toggle('is-sorteando', rolling);
+
+      if (rolling) {
+        if (rollLabel) rollLabel.textContent = 'Sorteando...';
+        if (nameEl) nameEl.textContent = 'Sorteando...';
+        if (effectEl) effectEl.textContent = '...';
+      } else if (rollLabel) {
+        rollLabel.textContent = 'Sortear local';
+      }
+    }
+
+    root.querySelectorAll('[data-plane-pool]').forEach((btn) => {
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isRolling) return;
+
+        const index = Number(btn.getAttribute('data-plane-pool'));
+        if (pool.has(index)) {
+          pool.delete(index);
+          if (activeIndex === index) activeIndex = null;
+        } else {
+          pool.add(index);
+        }
+        render();
+      });
+    });
+
+    rollBtn?.addEventListener('click', () => {
+      const available = [...pool];
+      if (available.length === 0 || isRolling) return;
+
+      if (rollTimer) clearInterval(rollTimer);
+
+      setRollingState(true);
+      render();
+
+      const started = Date.now();
+
+      rollTimer = setInterval(() => {
+        activeIndex = available[Math.floor(Math.random() * available.length)];
+        render();
+
+        if (Date.now() - started >= ROLL_DURATION_MS) {
+          clearInterval(rollTimer);
+          rollTimer = null;
+          activeIndex = available[Math.floor(Math.random() * available.length)];
+          setRollingState(false);
+          render();
+        }
+      }, ROLL_TICK_MS);
+    });
+
+    render();
+  }
+</script>

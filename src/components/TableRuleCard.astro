@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+type TableRule = NonNullable<CollectionEntry<'themes'>['data']['tableRule']>;
+
+interface Props {
+  tableRule: TableRule;
+}
+
+const { tableRule } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const imageSrc = `${base}${tableRule.image.replace(/^\//, '')}`;
+---
+
+<article class="table-rule">
+  <header class="table-rule__header">
+    <h2 class="table-rule__heading">{tableRule.subtitle ?? 'Regra Geral'}</h2>
+    <div class="table-rule__heading-rule" aria-hidden="true">
+      <span class="table-rule__heading-line"></span>
+      <span class="table-rule__heading-star">✦</span>
+      <span class="table-rule__heading-line"></span>
+    </div>
+  </header>
+
+  <div
+    class="table-rule__frame"
+    tabindex="0"
+    role="group"
+    aria-label={`Ampliar carta ${tableRule.name}`}
+  >
+    <img
+      src={imageSrc}
+      alt={tableRule.name}
+      class="table-rule__image"
+      width="731"
+      height="1024"
+      loading="lazy"
+      decoding="async"
+    />
+    <div class="table-rule__zoom" aria-hidden="true">
+      <img src={imageSrc} alt="" class="table-rule__zoom-image" width="731" height="1024" decoding="async" />
+    </div>
+  </div>
+</article>

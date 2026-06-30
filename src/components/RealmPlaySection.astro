@@ -1,0 +1,37 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TableRuleCard from './TableRuleCard.astro';
+import PlanechasePanel from './PlanechasePanel.astro';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+}
+
+const { theme } = Astro.props;
+const { tableRule, planechase } = theme.data;
+const hasRule = Boolean(tableRule);
+const hasPlanechase = planechase.length > 0;
+---
+
+{(hasRule || hasPlanechase) && (
+  <section class="realm-play" aria-label="Regra geral e locais temáticos">
+    <div
+      class:list={[
+        'realm-play__grid',
+        { 'realm-play__grid--dual': hasRule && hasPlanechase },
+      ]}
+    >
+      {hasRule && tableRule && (
+        <div class="realm-play__rule">
+          <TableRuleCard tableRule={tableRule} />
+        </div>
+      )}
+
+      {hasPlanechase && (
+        <div class="realm-play__planechase">
+          <PlanechasePanel theme={theme} />
+        </div>
+      )}
+    </div>
+  </section>
+)}

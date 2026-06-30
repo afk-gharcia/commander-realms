@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import ThemeCard from '../components/ThemeCard.astro';
+import { themeSlug } from '../lib/themes';
+import { SITE_NAME, SITE_DESCRIPTION } from '../lib/site';
+
+const themes = (await getCollection('themes'))
+  .filter((t) => t.data.status === 'active')
+  .sort((a, b) => a.data.name.localeCompare(b.data.name, 'pt-BR'));
+
+const slugs = themes.map((t) => themeSlug(t.id));
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={SITE_NAME} description={SITE_DESCRIPTION} mainClass="site-main--home">
+  <Header slot="header" />
+
+  <div class="content-container">
+    <section class="home-intro" id="como-funciona" aria-labelledby="home-intro-lead">
+      <article class="home-intro__card">
+        <div class="home-intro__emblem">
+          <img
+            src={`${base}images/branding/icon.png`}
+            alt=""
+            class="home-intro__icon"
+            width="100"
+            height="100"
+            decoding="async"
+          />
+        </div>
+        <div class="home-intro__content">
+          <p id="home-intro-lead" class="home-intro__lead">Por onde começar?</p>
+          <p class="home-intro__text">
+            Cada Realm abre as portas para uma nova mesa: regras únicas, decks prontos e locais temáticos para transformar sua partida.<br />
+            Escolha um <span class="home-intro__highlight">Realm</span> abaixo — ou deixe o acaso comandar.
+          </p>
+        </div>
+      </article>
+    </section>
+
+    {
+      themes.length > 0 ? (
+        <section class="realm-list-section" id="realms" aria-label="Lista de realms">
+          <div class="realm-list__header">
+            <h2 class="realm-list__title">Realms</h2>
+            <button type="button" class="btn btn--random" id="btn-random-realm">
+              <span class="btn--random__icon" aria-hidden="true">✦</span>
+              Realm aleatório
+            </button>
+          </div>
+          <ul class="realm-list">
+            {themes.map((theme) => (
+              <ThemeCard theme={theme} />
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <div class="empty-state">
+          <p>Nenhum realm cadastrado ainda.</p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script define:vars={{ slugs, base }}>
+  const btn = document.getElementById('btn-random-realm');
+  btn?.addEventListener('click', () => {
+    if (slugs.length === 0) return;
+    const slug = slugs[Math.floor(Math.random() * slugs.length)];
+    window.location.href = `${base}themes/${slug}/`;
+  });
+</script>

@@ -1,0 +1,54 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { themeSlug } from '../lib/themes';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+}
+
+const { theme } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const href = `${base}themes/${themeSlug(theme.id)}/`;
+const { name, summary, icon, meta } = theme.data;
+
+const iconSrc = icon ? `${base}${icon.replace(/^\//, '')}` : null;
+
+function playersLabel(players: number | string | undefined): string | null {
+  if (players === undefined) return null;
+  if (typeof players === 'string') return `${players} jogadores`;
+  return `${players} jogadores`;
+}
+
+const playersBadge = playersLabel(meta?.players);
+---
+
+<li>
+  <a href={href} class="theme-card">
+    <div class="realm-panel__inner theme-card__inner">
+      {iconSrc && (
+        <div class="theme-card__emblem">
+          <img
+            src={iconSrc}
+            alt=""
+            class="theme-card__icon"
+            width="72"
+            height="72"
+            decoding="async"
+            loading="lazy"
+          />
+        </div>
+      )}
+      <div class="theme-card__content">
+        <h2 class="realm-panel__lead theme-card__title">{name}</h2>
+        <p class="realm-panel__text theme-card__summary">{summary}</p>
+        {(playersBadge || meta?.bracket) && (
+          <div class="theme-card__meta">
+            {playersBadge && <span class="badge">{playersBadge}</span>}
+            {meta?.bracket && <span class="badge">Bracket {meta.bracket}</span>}
+          </div>
+        )}
+      </div>
+      <span class="theme-card__arrow" aria-hidden="true">→</span>
+    </div>
+  </a>
+</li>

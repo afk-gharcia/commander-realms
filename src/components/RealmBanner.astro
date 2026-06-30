@@ -1,0 +1,103 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  theme: CollectionEntry<'themes'>;
+}
+
+const { theme } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const { name, summary, cover, bannerTagline, meta, planechase } = theme.data;
+
+const coverSrc = cover ? `${base}${cover.replace(/^\//, '')}` : null;
+
+const tagline =
+  bannerTagline ??
+  (summary.includes(' — ') ? summary.slice(0, summary.indexOf(' — ')) : summary);
+
+interface StatItem {
+  label: string;
+  icon: 'players' | 'bracket' | 'locations';
+}
+
+const stats: StatItem[] = [];
+
+if (meta?.players !== undefined) {
+  const players =
+    typeof meta.players === 'string' ? meta.players : String(meta.players);
+  stats.push({ label: `${players} jogadores`, icon: 'players' });
+}
+
+if (meta?.bracket !== undefined) {
+  stats.push({ label: `Bracket ${meta.bracket}`, icon: 'bracket' });
+}
+
+if (planechase.length > 0) {
+  stats.push({
+    label: `${planechase.length} locai${planechase.length === 1 ? '' : 's'}`,
+    icon: 'locations',
+  });
+}
+---
+
+<div class="realm-banner-wrap">
+  <a href={base} class="realm-banner__back">
+    <span aria-hidden="true">←</span> Voltar aos Realms
+  </a>
+
+  <section class="realm-banner" aria-labelledby="realm-banner-title">
+    {coverSrc && (
+      <img
+        src={coverSrc}
+        alt=""
+        class="realm-banner__bg"
+        width="1280"
+        height="300"
+        decoding="async"
+        fetchpriority="high"
+      />
+    )}
+    <div class="realm-banner__scrim" aria-hidden="true"></div>
+
+    <div class="realm-banner__content">
+      <div class="realm-banner__center">
+        <div class="realm-banner__title-block">
+          <h1 id="realm-banner-title" class="realm-banner__title">{name}</h1>
+          <div class="realm-banner__divider" aria-hidden="true">
+            <span class="realm-banner__divider-line"></span>
+            <span class="realm-banner__divider-star">✦</span>
+            <span class="realm-banner__divider-line"></span>
+          </div>
+        </div>
+        <p class="realm-banner__tagline">{tagline}</p>
+      </div>
+
+      {stats.length > 0 && (
+        <ul class="realm-banner__stats">
+          {stats.map((stat) => (
+            <li class="realm-banner__stat">
+              <span class="realm-banner__stat-icon" aria-hidden="true">
+                {stat.icon === 'players' && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                  </svg>
+                )}
+                {stat.icon === 'bracket' && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 3.87-2.63 7.45-6 8.48-3.37-1.03-6-4.61-6-8.48V6.43l6-2.25z" />
+                  </svg>
+                )}
+                {stat.icon === 'locations' && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                  </svg>
+                )}
+              </span>
+              <span class="realm-banner__stat-label">{stat.label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+</div>
