@@ -2,7 +2,7 @@
 
 Static reference site for thematic Commander formats — decks, rules, and local Planechase.
 
-> **Note:** The GitHub repository may still be named `mtg-tematico` until renamed. The site `base` path is configured for `command-realms`.
+> **URL:** `https://afk-gharcia.github.io/commander-realms/`
 
 ## Local development
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Open in the browser: **http://localhost:4321/command-realms/**
+Open in the browser: **http://localhost:4321/commander-realms/**
 
 ### Other commands
 
